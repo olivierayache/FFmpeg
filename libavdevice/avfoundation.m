@@ -129,7 +129,6 @@ typedef struct
     AVCaptureSession         *capture_session;
     AVCaptureVideoDataOutput *video_output;
     AVCaptureAudioDataOutput *audio_output;
-    AVCaptureVideoPreviewLayer *capture_preview;
     intptr_t                  preview;
     CMSampleBufferRef         current_frame;
     CMSampleBufferRef         current_audio_frame;
@@ -980,11 +979,10 @@ static int avf_read_header(AVFormatContext *s)
     if (audio_device && add_audio_device(s, audio_device)) {
     }
 
-    ctx->capture_preview = [AVCaptureVideoPreviewLayer layerWithSession:ctx->capture_session];
-    ctx->capture_preview.videoGravity = AVLayerVideoGravityResizeAspect;
-    ctx->capture_preview.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
-    UIView* prev = (__bridge UIView*)ctx->preview;
-    [prev.layer addSubLayer:ctx->capture_preview];
+    if (ctx->preview) {
+        AVCaptureVideoPreviewLayer* prev = (__bridge AVCaptureVideoPreviewLayer*)ctx->preview;
+        prev.session = ctx->capture_session;
+    }
     
     [ctx->capture_session startRunning];
 
